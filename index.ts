@@ -1,18 +1,19 @@
-import {anthropic} from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
 
-const model = anthropic('claude-3-5-sonnet-latest');
+const model = openai('gpt-4');
 
 export const answerMyQuestion = async (question: string) => {
-    const { text } = await generateText({
+    const {textStream} = await streamText({
         model,
-        prompt: question,
-    
-})
+        prompt: question
+    });
 
+    for await (const chunk of textStream) {
+        process.stdout.write(chunk);
+    }
 
-    return text;
+    return textStream;
 }
 
-const answer = await answerMyQuestion("What is the capital of France?");
-console.log(answer);
+await answerMyQuestion('What is the capital of Uganda?');
