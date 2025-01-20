@@ -1,7 +1,8 @@
-import type { CoreMessage } from "ai";
+import { generateText, type CoreMessage } from "ai";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { once } from "node:events";
+import { openai } from "@ai-sdk/openai";
 
 const messages: CoreMessage[] = [
     {
@@ -19,11 +20,20 @@ const messages: CoreMessage[] = [
 
 ];
 
+const model = openai('gpt-4');
+
 export const startServer = async () => {
     const app = new Hono();
 
     app.post('/api/get-completions', async(ctx) => {
-        // We'll implement this later!
+        const messages: CoreMessage[] = await ctx.req.json();
+
+        const result = await generateText({
+            model,
+            messages
+        });
+
+        return ctx.json(result.response.messages);
     });
 
     const server = serve({

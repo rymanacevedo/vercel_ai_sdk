@@ -1,16 +1,30 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import type { CoreMessage } from "ai";
+import { startServer } from "./06_ChatHistory";
 
-const model = openai('gpt-4');
+const messagesToSend: CoreMessage[] = [
+    {
+        role: 'user',
+        content: "What's the capital of France?"
+    },
 
-export const answerMyQuestion = async (question: string) => {
-    const {text} = await streamText({
-        model,
-        prompt: question
-    });
+];
 
-    const finalText = await text;
-    return text;
-}
+await startServer();
 
-await answerMyQuestion('What is the capital of Uganda?');
+const response = await fetch('http://localhost:4317/api/get-completions', {
+    
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(messagesToSend)
+});
+
+const newMessages = (await response.json()) as CoreMessage[];
+
+const allMessages = [
+    ...messagesToSend,
+    ...newMessages
+]
+
+console.dir(allMessages, { depth: null });
